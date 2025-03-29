@@ -1,56 +1,85 @@
-import React, { createContext, useContext, useState } from 'react';
-import CasinoRewardsForm from './components/CasinoRewardsForm';
+import React, { useState, useEffect } from 'react';
+import { Route, Routes, Navigate, Link } from 'react-router-dom';
+import { Session } from '@supabase/supabase-js';
+import { supabase } from './lib/supabaseClient';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import CalculatorPage from './pages/CalculatorPage';
 
-interface Reward {
-  day: number;
-  reward: string;
-  claimed: boolean;
-}
+function App() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
-interface User {
-  username: string;
-  streak: number;
-  rewards: Reward[];
-}
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
 
-interface AppContextType {
-  user: User;
-  claimReward: (day: number) => void;
-}
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        setLoading(false); 
+      }
+    );
 
-const AppContext = createContext<AppContextType | null>(null);
+    // Cleanup subscription on unmount
+    return () => {
+      // Correct way to unsubscribe
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
 
-export default function App() {
-  const [user, setUser] = useState<User>({
-    username: 'Player1',
-    streak: 0,
-    rewards: Array.from({ length: 7 }, (_, i) => ({
-      day: i + 1,
-      reward: `Reward Day ${i + 1}`,
-      claimed: false,
-    })),
-  });
-
-  const claimReward = (day: number) => {
-    setUser(prev => ({
-      ...prev,
-      rewards: prev.rewards.map(r => 
-        r.day === day ? { ...r, claimed: true } : r
-      ),
-      streak: prev.streak + 1,
-    }));
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("Error logging out:", error.message);
+    }
   };
 
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
   return (
-    <AppContext.Provider value={{ user, claimReward }}>
-      <div className="min-h-screen bg-gray-900 text-white">
-        <header className="p-4 bg-gray-800">
-          <h1 className="text-2xl font-bold">Casino Rewards</h1>
-        </header>
-        <main className="max-w-4xl mx-auto p-4">
-          <CasinoRewardsForm />
-        </main>
-      </div>
-    </AppContext.Provider>
+    <div className="min-h-screen bg-gray-100">
+      <header className="bg-gray-800 text-white p-4 flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Casino Rewards Calculator</h1>
+        {session ? (
+          <button
+            onClick={handleLogout}
+            className="px-3 py-1 bg-red-600 rounded hover:bg-red-700"
+          >
+            Logout
+          </button>
+        ) : (
+          <div>
+            <Link to="/login" className="mr-2 text-blue-300 hover:text-blue-100">Login</Link>
+            <Link to="/register" className="text-blue-300 hover:text-blue-100">Register</Link>
+          </div>
+        )}
+      </header>
+
+      <main className="max-w-4xl mx-auto p-4 md:p-8">
+        <Routes>
+          <Route
+            path="/"
+            element={session ? <CalculatorPage /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/login"
+            element={!session ? <LoginPage /> : <Navigate to="/" replace />}
+          />
+          <Route
+            path="/register"
+            element={!session ? <RegisterPage /> : <Navigate to="/" replace />}
+          />
+        </Routes>
+      </main>
+    </div>
   );
 }
+
+export default App;
