@@ -4,7 +4,8 @@ import { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabaseClient';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import CalculatorPage from './pages/CalculatorPage';
+import CalculatorPage from './pages/CalculatorPage'; 
+import DashboardPage from './pages/DashboardPage'; 
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -64,17 +65,30 @@ function App() {
 
       <main className="max-w-4xl mx-auto p-4 md:p-8">
         <Routes>
+          {/* Root path: redirect based on session */}
           <Route
             path="/"
+            element={session ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
+          />
+          {/* Dashboard: Protected Route */}
+          <Route
+            path="/dashboard"
+            element={session ? <DashboardPage /> : <Navigate to="/login" replace />}
+          />
+          {/* Calculator: Protected Route (example, might remove later) */}
+          <Route
+            path="/calculator"
             element={session ? <CalculatorPage /> : <Navigate to="/login" replace />}
           />
+          {/* Login: Redirect if already logged in */}
           <Route
             path="/login"
-            element={!session ? <LoginPage /> : <Navigate to="/" replace />}
+            element={!session ? <LoginPage /> : <Navigate to="/dashboard" replace />}
           />
+          {/* Register: Redirect if already logged in */}
           <Route
             path="/register"
-            element={!session ? <RegisterPage /> : <Navigate to="/" replace />}
+            element={!session ? <RegisterPage /> : <Navigate to="/dashboard" replace />}
           />
         </Routes>
       </main>
