@@ -30,7 +30,7 @@ const convertDbFormatToFormState = (dbData: UserFormData | null | undefined): Fo
     };
 };
 
-const CalculatorPage: React.FC = () => {
+const Calculator: React.FC = () => {
     const [userFormData, setUserFormData] = useState<UserFormData | null>(null);
     const [initialFormData, setInitialFormData] = useState<FormState | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -147,4 +147,4 @@ const CalculatorPage: React.FC = () => {
     );
 };
 
-export default CalculatorPage;
+export default Calculator;
