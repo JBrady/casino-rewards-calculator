@@ -58,13 +58,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return { error };
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string): Promise<{ error: AuthError | null }> => {
     setLoading(true);
-    // Note: Supabase sends a confirmation email by default.
-    const { error } = await supabase.auth.signUp({ email, password });
-    // User needs to confirm email, state won't change until they log in after confirming.
-    setLoading(false);
-    return { error };
+    try {
+      // Note: Supabase sends a confirmation email by default (if enabled).
+      const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+
+      if (authError) {
+        // Throw auth error to be caught below
+        throw authError;
+      }
+
+      // If signup was successful and we got user data, the trigger will handle profile creation.
+      // We no longer need to attempt the insert from the client.
+      if (authData?.user) {
+        console.log(`User ${authData.user.id} created, trigger will handle profile.`);
+      } else {
+        // This case should be rare if authError is null, but handle defensively
+        throw new Error('Sign up succeeded according to Supabase, but no user data was returned.');
+      }
+
+      // User needs to confirm email (if enabled), state won't fully change until login post-confirmation.
+      // Return null error on success, matching AuthContextType
+      return { error: null };
+
+    } catch (error) {
+      // Catch errors from auth.signUp only
+      console.error("Sign up auth error:", error);
+      // Ensure the returned error conforms to AuthError type for the interface
+      const returnedError = error instanceof AuthError ? error : new AuthError(String(error), (error instanceof Error && 'status' in error ? error.status as number : undefined));
+      // Return the auth error, matching AuthContextType
+      return { error: returnedError }; 
+    } finally {
+      setLoading(false);
+    }
   };
 
   const signOut = async () => {

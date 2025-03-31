@@ -83,6 +83,30 @@ export const updateLastCollected = async (trackedCasinoId: string) => {
 
   console.log(`Successfully updated last_collected_at for ${trackedCasinoId}`);
 
+  // --- ADDITION: Update user_form_data.last_collection_time ---
+  if (user) {
+    const { error: userFormDataError } = await supabase
+      .from('user_form_data')
+      .update({ last_collection_time: now })
+      .eq('user_id', user.id);
+
+    if (userFormDataError) {
+      // Log this error but don't necessarily stop the process, 
+      // as the main casino update succeeded. Consider if this should throw.
+      console.error(
+        `Error updating user_form_data.last_collection_time for user ${user.id}:`,
+        userFormDataError.message
+      );
+      // Optionally throw an error here if this update is critical:
+      // throw new Error(`Failed to update user profile collection time: ${userFormDataError.message}`);
+    } else {
+      console.log(`Successfully updated user_form_data.last_collection_time for user ${user.id}`);
+    }
+  } else {
+      console.warn('Cannot update user_form_data: user object not available.')
+  }
+  // --- END ADDITION ---
+
   // Fetch casino name for better activity log description
   let casinoName = `casino ID: ${trackedCasinoId}`; // Default description
   try {

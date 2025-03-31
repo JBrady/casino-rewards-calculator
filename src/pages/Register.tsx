@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; 
-import { supabase } from '../lib/supabaseClient'; 
+import { useAuthContext } from '../contexts/AuthContext'; 
 
 const Register: React.FC = () => {
   const navigate = useNavigate(); 
+  const { signUp } = useAuthContext(); 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,22 +17,26 @@ const Register: React.FC = () => {
     setError(null);
     setMessage(null);
 
-    const { data, error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    });
+    const { error: signUpError } = await signUp(email, password);
 
-    if (error) {
-      setError(error.message);
-    } else if (data.user && data.user.identities?.length === 0) {
-      setError("User already exists but is unconfirmed. Please check your email to confirm.");
-    } else if (data.user) {
+    if (signUpError) {
+      console.error("Registration component error:", signUpError);
+      if (signUpError.message.includes('User already registered')) {
+          setError('This email is already registered. Please try logging in.');
+      } else if (signUpError.message.includes('Password should be at least 6 characters')) {
+          setError('Password must be at least 6 characters long.');
+      } else if (signUpError.message.includes('Unable to validate email address: invalid format')) {
+          setError('Please enter a valid email address.');
+      } else if (signUpError.message.includes('failed to create user profile')) { 
+          setError('Registration successful, but failed to create user profile. Please contact support.');
+      } else {
+          setError(signUpError.message || 'An unexpected error occurred during registration.');
+      }
+    } else {
       setMessage('Registration successful! Please check your email for the confirmation link.');
       setEmail('');
       setPassword('');
       // navigate('/login'); 
-    } else {
-        setError('An unexpected error occurred during registration.');
     }
 
     setLoading(false);

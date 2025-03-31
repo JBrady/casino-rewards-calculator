@@ -78,63 +78,62 @@ function App() {
         )}
       </header>
 
-      <Router>
-        <main className="max-w-4xl mx-auto p-4 md:p-8">
-          <Routes>
-            {/* Root path: redirect based on session */}
-            <Route
-              path="/"
-              element={session ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
-            />
-            {/* Dashboard: Protected Route */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute session={session}>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            {/* Calculator: Protected Route (example, might remove later) */}
-            <Route
-              path="/calculator"
-              element={
-                <ProtectedRoute session={session}>
-                  <Calculator />
-                </ProtectedRoute>
-              }
-            />
-            {/* Add Casino: Protected Route */}
-            <Route
-              path="/add-casino"
-              element={
-                <ProtectedRoute session={session}>
-                  <AddCasino />
-                </ProtectedRoute>
-              }
-            />
-            {/* Edit Casino: Protected Route */}
-            <Route
-              path="/edit-casino/:id" // The :id part makes 'id' a URL parameter
-              element={
-                <ProtectedRoute session={session}>
-                  <EditCasino />
-                </ProtectedRoute>
-              }
-            />
-            {/* Login: Redirect if already logged in */}
-            <Route
-              path="/login"
-              element={!session ? <Login /> : <Navigate to="/dashboard" replace />}
-            />
-            {/* Register: Redirect if already logged in */}
-            <Route
-              path="/register"
-              element={!session ? <Register /> : <Navigate to="/dashboard" replace />}
-            />
-          </Routes>
-        </main>
-      </Router>
+      <main className="max-w-4xl mx-auto p-4 md:p-8">
+        <Routes>
+          {/* Root path: redirect based on session */}
+          <Route
+            path="/"
+            element={session ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
+          />
+          {/* Dashboard: Protected Route */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute session={session}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          {/* Calculator: Protected Route (example, might remove later) */}
+          <Route
+            path="/calculator"
+            element={
+              <ProtectedRoute session={session}>
+                <Calculator />
+              </ProtectedRoute>
+            }
+          />
+          {/* Add Casino: Protected Route */}
+          <Route
+            path="/add-casino"
+            element={
+              <ProtectedRoute session={session}>
+                <AddCasino />
+              </ProtectedRoute>
+            }
+          />
+          {/* Edit Casino: Protected Route */}
+          <Route
+            path="/edit-casino/:id" // The :id part makes 'id' a URL parameter
+            element={
+              <ProtectedRoute session={session}>
+                <EditCasino />
+              </ProtectedRoute>
+            }
+          />
+          {/* Login: Redirect if already logged in */}
+          <Route
+            path="/login"
+            element={!session ? <Login /> : <Navigate to="/dashboard" replace />}
+          />
+          {/* Register: Redirect if already logged in */}
+          <Route
+            path="/register"
+            element={!session ? <Register /> : <Navigate to="/dashboard" replace />}
+          />
+          <Route path="*" element={<Navigate to="/" replace />} /> {/* Catch-all */}
+        </Routes>
+      </main>
     </div>
   );
 }
