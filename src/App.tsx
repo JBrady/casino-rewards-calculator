@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import AddCasino from './pages/AddCasino';   
 import EditCasino from './pages/EditCasino'; 
 import Calculator from './pages/Calculator'; 
+import UploadData from './pages/UploadData'; 
 
 // Higher-order component for protected routes
 interface ProtectedRouteProps {
@@ -118,6 +119,15 @@ function App() {
             element={
               <ProtectedRoute session={session}>
                 <EditCasino />
+              </ProtectedRoute>
+            }
+          />
+          {/* Upload Data: Protected Route */}
+          <Route
+            path="/upload-data"
+            element={
+              <ProtectedRoute session={session}>
+                <UploadData />
               </ProtectedRoute>
             }
           />
